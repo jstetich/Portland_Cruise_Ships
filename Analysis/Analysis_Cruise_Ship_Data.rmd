@@ -101,7 +101,6 @@ especially for 2017.
 Other interesting questions:  When do ships arrive and depart?  How long do they spend in Port? 
 
 # Annual Totals
-## Table
 ```{r annual_summary}
 annual_data <- the_data %>%
   select(-c(2:10)) %>%
@@ -113,13 +112,13 @@ annual_data <- the_data %>%
              meanship     = mean(loa, na.rm=TRUE),
              medianship   = median(loa, na.rm=TRUE))
 ```
-
+## Table
 ```{r}
 knitr::kable(annual_data,
              col.names = c('Year', 'Visits', 'Passengers', 'Mean Passenger #', 'Mean Ship Length (ft)', 'Median Passenger #', 'Median Ship Length (ft)'),
              digits = c(0, 0, 0, 1, 1, 0, 0))
 ```
-# Graphics for visits and passengers
+# Graphics for Visits and Passengers
 ```{r visits_graphic}
 annual_data %>% 
   select(! contains('me')) %>%   # drop means and medians, which we don't want here.
@@ -161,7 +160,6 @@ ggplot(aes(year, value, color=Metric)) + geom_line() + geom_point (shape = 17, s
 
 ```
 
-
 ```{r ship_size_graphic_density}
 the_data %>% 
   select(arr_date, loa, pax) %>%
@@ -178,8 +176,7 @@ ggplot(aes(loa, pax))+
 ```
 So, the two strongest clusters are for ships under 350 feet, with typically under 500 passengers, and over 900 feet with over about 1500 
 
-Lets look at a cross tab like that.
-
+Lets look at a cross tab to roughly optimize classifications.
 ```{r categories}
 loacat = cut(the_data$loa, breaks = c(0, 350, 900, 5000), labels = c("Small", "Medium", "Large"))
 paxcat = cut(the_data$pax, breaks = c(0, 500, 1500, 5000), labels = c("Small", "Medium", "Large"))
@@ -189,15 +186,14 @@ table(loacat, paxcat)
 ```
 
 We can refine the categories slightly to reduce cross-classification errors.
-
 ```{r modified_categories}
 loacat = cut(the_data$loa, breaks = c(0, 500, 800, 5000), labels = c("Small", "Medium", "Large"))
 paxcat = cut(the_data$pax, breaks = c(0, 500, 1500, 5000), labels = c("Small", "Medium", "Large"))
 
 table(loacat, paxcat)
 ```
-
 What we see are the Silver Line ships are longer for the number of passengers than most....
+
 
 ```{r visits_barchart}
 the_data %>% mutate(category = loacat) %>%
@@ -265,7 +261,7 @@ monthly_data2 <- monthly_data %>%
 ggplot(monthly_data2, aes(Month,visits, group=year)) +
   geom_col(aes(fill=factor(year)),
            position=position_dodge(preserve = 'single')) +
-  ylab('Monthly Cruise Ship Visits') +
+  ylab('Cruise Ship Visits') +
   xlab('') +
   scale_fill_manual(values = cbep_colors2(), name = '') +
   theme_cbep()
@@ -281,7 +277,7 @@ ggsave('visitbymonth.png', type = 'cairo',   width = 7, height = 5)
 ggplot(monthly_data2, aes(Month, passengers, group=year)) +
   geom_col(aes(fill=factor(year)),
            position=position_dodge(preserve = 'single')) +
-  ylab('Monthly Cruise Ship Passengers') +
+  ylab('Cruise Ship Passengers') +
   xlab('') +
   scale_fill_manual(values = cbep_colors2(), name = '') +
   scale_y_continuous(labels = scales::comma) +

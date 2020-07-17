@@ -9,8 +9,8 @@ Curtis C. Bohlen, Casco Bay Estuary Partnership
   - [Strategy](#strategy)
   - [Annual Totals](#annual-totals)
       - [Table](#table)
-  - [Graphics for visits and
-    passengers](#graphics-for-visits-and-passengers)
+  - [Graphics for Visits and
+    Passengers](#graphics-for-visits-and-passengers)
   - [Graphics for Ship Size](#graphics-for-ship-size)
   - [Seasonal Patterns](#seasonal-patterns)
 
@@ -121,8 +121,6 @@ do they spend in Port?
 
 # Annual Totals
 
-## Table
-
 ``` r
 annual_data <- the_data %>%
   select(-c(2:10)) %>%
@@ -136,6 +134,8 @@ annual_data <- the_data %>%
 ```
 
     ## `summarise()` ungrouping output (override with `.groups` argument)
+
+## Table
 
 ``` r
 knitr::kable(annual_data,
@@ -151,7 +151,7 @@ knitr::kable(annual_data,
 | 2018 |    110 |     157853 |            1448.2 |                   795 |                 641 |                     663 |
 | 2019 |    106 |     157589 |            1486.7 |                  1805 |                 665 |                     856 |
 
-# Graphics for visits and passengers
+# Graphics for Visits and Passengers
 
 ``` r
 annual_data %>% 
@@ -224,7 +224,7 @@ ggplot(aes(loa, pax))+
 So, the two strongest clusters are for ships under 350 feet, with
 typically under 500 passengers, and over 900 feet with over about 1500
 
-Lets look at a cross tab like that.
+Lets look at a cross tab to roughly optimize classifications.
 
 ``` r
 loacat = cut(the_data$loa, breaks = c(0, 350, 900, 5000), labels = c("Small", "Medium", "Large"))
@@ -339,7 +339,7 @@ monthly_data2 <- monthly_data %>%
 ggplot(monthly_data2, aes(Month,visits, group=year)) +
   geom_col(aes(fill=factor(year)),
            position=position_dodge(preserve = 'single')) +
-  ylab('Monthly Cruise Ship Visits') +
+  ylab('Cruise Ship Visits') +
   xlab('') +
   scale_fill_manual(values = cbep_colors2(), name = '') +
   theme_cbep()
@@ -356,7 +356,7 @@ ggsave('visitbymonth.png', type = 'cairo',   width = 7, height = 5)
 ggplot(monthly_data2, aes(Month, passengers, group=year)) +
   geom_col(aes(fill=factor(year)),
            position=position_dodge(preserve = 'single')) +
-  ylab('Monthly Cruise Ship Passengers') +
+  ylab('Cruise Ship Passengers') +
   xlab('') +
   scale_fill_manual(values = cbep_colors2(), name = '') +
   scale_y_continuous(labels = scales::comma) +
