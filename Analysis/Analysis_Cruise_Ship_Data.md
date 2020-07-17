@@ -12,6 +12,7 @@ Curtis C. Bohlen, Casco Bay Estuary Partnership
   - [Graphics for visits and
     passengers](#graphics-for-visits-and-passengers)
   - [Graphics for Ship Size](#graphics-for-ship-size)
+  - [Seasonal Patterns](#seasonal-patterns)
 
 <img
   src="https://www.cascobayestuary.org/wp-content/uploads/2014/04/logo_sm.jpg"
@@ -107,14 +108,10 @@ We want to be able to look at how visits to Portland are changing, so we
 want:
 
   - Annual total number of visits
-
   - Annual total number of passengers
-
   - Annual size distribution of ships – both length and passengers
-
   - Annual pattern of monthly arrivals – ships
-
-  - Annual pattern of monthly arrivals – passengers
+  - Annual pattern of monthly arrivals – passengers.
 
 It would be nice to look at crew numbers too, but that data is
 incomplete, especially for 2017.
@@ -143,16 +140,16 @@ annual_data <- the_data %>%
 ``` r
 knitr::kable(annual_data,
              col.names = c('Year', 'Visits', 'Passengers', 'Mean Passenger #', 'Mean Ship Length (ft)', 'Median Passenger #', 'Median Ship Length (ft)'),
-             digits = c(0,0,1,0,1,0))
+             digits = c(0, 0, 0, 1, 1, 0, 0))
 ```
 
 | Year | Visits | Passengers | Mean Passenger \# | Mean Ship Length (ft) | Median Passenger \# | Median Ship Length (ft) |
 | ---: | -----: | ---------: | ----------------: | --------------------: | ------------------: | ----------------------: |
-| 2015 |     83 |      94408 |              1137 |                   468 |                 595 |                     610 |
-| 2016 |     77 |     100546 |              1306 |                   913 |                 624 |                     715 |
-| 2017 |     92 |     134643 |              1464 |                  1225 |                 638 |                     820 |
-| 2018 |    110 |     157853 |              1448 |                   795 |                 641 |                     663 |
-| 2019 |    106 |     157589 |              1487 |                  1805 |                 665 |                     856 |
+| 2015 |     83 |      94408 |            1137.4 |                   468 |                 595 |                     610 |
+| 2016 |     77 |     100546 |            1305.8 |                   913 |                 624 |                     715 |
+| 2017 |     92 |     134643 |            1463.5 |                  1225 |                 638 |                     820 |
+| 2018 |    110 |     157853 |            1448.2 |                   795 |                 641 |                     663 |
+| 2019 |    106 |     157589 |            1486.7 |                  1805 |                 665 |                     856 |
 
 # Graphics for visits and passengers
 
@@ -279,4 +276,96 @@ ggplot(aes(year, ..count.., fill = category) ) + geom_bar() +
 ``` r
 ggsave('visitsbysize.pdf', device = cairo_pdf, width = 7, height = 5)
 ggsave('visitbysize.png', type = 'cairo',   width = 7, height = 5)
+```
+
+# Seasonal Patterns
+
+``` r
+monthly_data <- the_data %>%
+  select(-c(2:10)) %>%
+  group_by(year, Month) %>%
+  summarize( visits       = sum(! is.na(vessel)),
+             passengers   = sum(pax, na.rm = TRUE),
+             meanpax      = mean(pax, na.rm=TRUE),
+             medianpax    = median(pax, na.rm= TRUE),
+             meanship     = mean(loa, na.rm=TRUE),
+             medianship   = median(loa, na.rm=TRUE))
+```
+
+    ## `summarise()` regrouping output by 'year' (override with `.groups` argument)
+
+``` r
+ggplot(monthly_data, aes(Month,visits, group=year)) + geom_line(aes(color=year)) +theme_cbep()
+```
+
+![](Analysis_Cruise_Ship_Data_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+``` r
+ggplot(monthly_data, aes(Month,visits, group=year)) + geom_col(aes(fill=factor(year)), position=position_dodge(preserve='single')) +
+  ylab('Monthly Cruise Ship Visits') +
+  xlab('') +
+  scale_fill_manual(values = cbep_colors2(), name = '') +
+  theme_cbep()
+```
+
+![](Analysis_Cruise_Ship_Data_files/figure-gfm/failed_monthly-1.png)<!-- -->
+
+We are very close, but we need to fill in missing values to get this to
+plot the way we want.
+
+``` r
+table(monthly_data$year,monthly_data$Month)
+```
+
+    ##       
+    ##        Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+    ##   2015   0   0   0   0   1   1   1   1   1   1   1   0
+    ##   2016   0   0   0   0   1   1   1   1   1   1   0   0
+    ##   2017   0   0   0   0   1   1   1   1   1   1   1   0
+    ##   2018   0   0   0   1   1   1   1   1   1   1   1   0
+    ##   2019   0   0   0   0   1   1   1   1   1   1   0   0
+
+So, we need to add rows for April November from the missing years.}
+
+``` r
+add_dat <- tibble(year = c(2015, 2016, 2017, 2019, 2016, 2017),
+                  Month = factor (c(4,4,4,4,11,11), levels = 1:12, labels = month.abb),
+                  visits=0,passengers=0, meanpax=0, medianpax=0, meanship=0, medianship = 0)
+monthly_data2 <- monthly_data %>%
+  bind_rows(add_dat)
+```
+
+``` r
+ggplot(monthly_data2, aes(Month,visits, group=year)) +
+  geom_col(aes(fill=factor(year)),
+           position=position_dodge(preserve = 'single')) +
+  ylab('Monthly Cruise Ship Visits') +
+  xlab('') +
+  scale_fill_manual(values = cbep_colors2(), name = '') +
+  theme_cbep()
+```
+
+![](Analysis_Cruise_Ship_Data_files/figure-gfm/visits_by_month-1.png)<!-- -->
+
+``` r
+ggsave('visitsbymonth.pdf', device = cairo_pdf, width = 7, height = 5)
+ggsave('visitbymonth.png', type = 'cairo',   width = 7, height = 5)
+```
+
+``` r
+ggplot(monthly_data2, aes(Month, passengers, group=year)) +
+  geom_col(aes(fill=factor(year)),
+           position=position_dodge(preserve = 'single')) +
+  ylab('Monthly Cruise Ship Passengers') +
+  xlab('') +
+  scale_fill_manual(values = cbep_colors2(), name = '') +
+  scale_y_continuous(labels = scales::comma) +
+  theme_cbep()
+```
+
+![](Analysis_Cruise_Ship_Data_files/figure-gfm/passengers_by_month-1.png)<!-- -->
+
+``` r
+ggsave('passengerssbymonth.pdf', device = cairo_pdf, width = 7, height = 5)
+ggsave('passengersbymonth.png', type = 'cairo',   width = 7, height = 5)
 ```
