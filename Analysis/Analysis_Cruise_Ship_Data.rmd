@@ -92,7 +92,6 @@ We want to be able to look at how visits to Portland are changing, so we want:
 *  Annual total number of visits
 *  Annual total number of passengers
 *  Annual size distribution of ships -- both length and passengers
-
 *  Annual pattern of monthly arrivals -- ships
 *  Annual pattern of monthly arrivals -- passengers
 
@@ -118,7 +117,7 @@ annual_data <- the_data %>%
 ```{r}
 knitr::kable(annual_data,
              col.names = c('Year', 'Visits', 'Passengers', 'Mean Passenger #', 'Mean Ship Length (ft)', 'Median Passenger #', 'Median Ship Length (ft)'),
-             digits = c(0,0,1,0,1,0))
+             digits = c(0, 0, 0, 1, 1, 0, 0))
 ```
 # Graphics for visits and passengers
 ```{r visits_graphic}
@@ -217,5 +216,77 @@ ggsave('visitbysize.png', type = 'cairo',   width = 7, height = 5)
 
 
 ```
+# Seasonal Patterns
+
+```{r seasonal_data}
+monthly_data <- the_data %>%
+  select(-c(2:10)) %>%
+  group_by(year, Month) %>%
+  summarize( visits       = sum(! is.na(vessel)),
+             passengers   = sum(pax, na.rm = TRUE),
+             meanpax      = mean(pax, na.rm=TRUE),
+             medianpax    = median(pax, na.rm= TRUE),
+             meanship     = mean(loa, na.rm=TRUE),
+             medianship   = median(loa, na.rm=TRUE))
+
+```
+```{r}
+ggplot(monthly_data, aes(Month,visits, group=year)) + geom_line(aes(color=year)) +theme_cbep()
+```
 
 
+```{r failed_monthly}
+ggplot(monthly_data, aes(Month,visits, group=year)) + geom_col(aes(fill=factor(year)), position=position_dodge(preserve='single')) +
+  ylab('Monthly Cruise Ship Visits') +
+  xlab('') +
+  scale_fill_manual(values = cbep_colors2(), name = '') +
+  theme_cbep()
+```
+
+We are very close, but we need to fill in missing values to get this to plot the way we want.
+
+```{r examine_missing}
+table(monthly_data$year,monthly_data$Month)
+```
+So, we need to add rows for April November from the missing years.}
+```{r  add_zero_values}
+add_dat <- tibble(year = c(2015, 2016, 2017, 2019, 2016, 2017),
+                  Month = factor (c(4,4,4,4,11,11), levels = 1:12, labels = month.abb),
+                  visits=0,passengers=0, meanpax=0, medianpax=0, meanship=0, medianship = 0)
+monthly_data2 <- monthly_data %>%
+  bind_rows(add_dat)
+
+```
+
+
+
+
+```{r visits_by_month}
+ggplot(monthly_data2, aes(Month,visits, group=year)) +
+  geom_col(aes(fill=factor(year)),
+           position=position_dodge(preserve = 'single')) +
+  ylab('Monthly Cruise Ship Visits') +
+  xlab('') +
+  scale_fill_manual(values = cbep_colors2(), name = '') +
+  theme_cbep()
+
+ggsave('visitsbymonth.pdf', device = cairo_pdf, width = 7, height = 5)
+ggsave('visitbymonth.png', type = 'cairo',   width = 7, height = 5)
+
+```
+
+
+
+```{r passengers_by_month}
+ggplot(monthly_data2, aes(Month, passengers, group=year)) +
+  geom_col(aes(fill=factor(year)),
+           position=position_dodge(preserve = 'single')) +
+  ylab('Monthly Cruise Ship Passengers') +
+  xlab('') +
+  scale_fill_manual(values = cbep_colors2(), name = '') +
+  scale_y_continuous(labels = scales::comma) +
+  theme_cbep()
+ggsave('passengerssbymonth.pdf', device = cairo_pdf, width = 7, height = 5)
+ggsave('passengersbymonth.png', type = 'cairo',   width = 7, height = 5)
+
+```
