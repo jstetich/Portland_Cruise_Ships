@@ -35,8 +35,8 @@ the ferry data from data on other ships, to simplify data reorganization and
 cleaning. Ferry data is retained in the Excel sheet, but the ferry data is not
 interleaved chronologically with the cruise ship data.
 
-Users should think carefully abotu whether to nclude the Ferry data in their
-analysis or not.  If your focus ins on cruise ships, you may want to omit this
+Users should think carefully about whether to include the Ferry data in their
+analysis or not.  If your focus is on cruise ships, you may want to omit this
 vessel, but if your emphasis is on the use of the port, then it makes more
 sense to retain it.
 
@@ -57,16 +57,16 @@ We renamed a few data columns to avoid name conflicts in R.
 
 # Notes
 * Users should not rely on data being in chronological order.
-* Data on number of passemgers appears to be a mixture of data on CAPACITY and
+* Data on number of passengers appears to be a mixture of data on CAPACITY and
   actual numbers, or perhaps the ships sometimes cruise with different numbers
   of passengers and crew.  Total passenger numbers should probably be treated
   as approximations to the actual number of passengers.
-  * Data on Ship Details appear to ihave some inconsistnecies too. Some ships
-  appear to have reported LOA, othes WLL or other length nmeasures.  The D field
+  * Data on Ship Details appear to have some inconsistencies too. Some ships
+  appear to have reported LOA, others WLL or other length measures.  The D field
   appears especially inconsistent, referring either to depth or draught.
 
 # Error Checking and Data Evaluation
-We aggregated the annual data int oa single sheet of the spreadsheet to simplify
+We aggregated the annual data into a single sheet of the spreadsheet to simplify
 data QA/QC and import into R.
 
 We used Pivot Tables in Excel and sorting to check whether Ship Details
@@ -78,7 +78,7 @@ In 2018, it was listed with a beam of 128 feet, while it was listed in 2019 as
 having a beam of 127 feet.
 
 We corrected such inconsistencies ONLY in the "Cruise" tab of the Excel
-Spreadsheet, which feeds into the pivot table sumamrizing properties or each vessel.
+Spreadsheet, which feeds into the pivot table summarizing properties for each vessel.
 
 We checked spelling and presentation of ship names.  We corrected names
 to match the most common form, or a name found on-ine if we could find one.
